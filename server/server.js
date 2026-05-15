@@ -8,12 +8,13 @@ import resourceRoutes from './routes/resourceRoutes.js'
 
 connectDB()
 
-const app = express()
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173' ,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Added OPTIONS explicitly
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'], // Added your custom header here!
   credentials: true,
 }))
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/api/resources', resourceRoutes)

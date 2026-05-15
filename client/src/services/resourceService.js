@@ -6,7 +6,7 @@ const API = axios.create({
     'x-api-key': import.meta.env.VITE_API_KEY ?? '',
   },
 })
-
+console.log("FRONTEND TARGET API URL IS:", import.meta.env.VITE_API_URL);
 export const createResource = (data) => API.post('/resources', data)
 export const getResources = (params) => API.get('/resources', { params })
 export const getResource = (id) => API.get(`/resources/${id}`)
