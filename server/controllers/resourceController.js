@@ -317,7 +317,12 @@ export const saveReelVideos = async (req, res) => {
     const newResources = resources.filter(r => !existingIds.has(r.videoId))
 
     if (newResources.length === 0) {
-      return res.status(400).json({ success: false, message: 'All videos are already saved' })
+      return res.status(200).json({ 
+        success: true, 
+        message: 'All videos already in your library',
+        data: [],
+        alreadySaved: true
+      })
     }
     const saved = await Resource.insertMany(newResources)
     res.status(201).json({
