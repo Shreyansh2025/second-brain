@@ -12,6 +12,7 @@ API.interceptors.request.use((config) => {
   return config
 })
 
+
 export const createResource = (data) => API.post('/resources', data)
 export const getResources = (params) => API.get('/resources', { params })
 export const getResource = (id) => API.get(`/resources/${id}`)

@@ -33,6 +33,7 @@ function AppContent() {
               props.activeNav === 'digest' ? <Digest /> :
               <Dashboard {...props} />
             }
+            
           </Layout>
         </ResourceProvider>
       </div>

@@ -199,6 +199,7 @@ const handleScreenshotUpload = async () => {
         setTimeout(() => onSaved(), 1500)
       } else {
         onSaved()
+        
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Save failed'
