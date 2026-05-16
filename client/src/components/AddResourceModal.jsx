@@ -135,9 +135,10 @@ export default function AddResourceModal({ onClose, onSaved }) {
           }
         }
       }
-
-      setScreenshotResults({ videos: allVideos })
-      setSelectedReelVideos(allVideos.map(v => v.videoId))
+console.log('allVideos before set:', allVideos)
+console.log('allVideos length:', allVideos.length)
+setScreenshotResults({ videos: allVideos })
+setSelectedReelVideos(allVideos.map(v => v.videoId))
     } catch (error) {
       const message = error.response?.data?.message || 'Upload failed. Check console.'
       showToast(message)
