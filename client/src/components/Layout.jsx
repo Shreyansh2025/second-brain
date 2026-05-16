@@ -10,6 +10,7 @@ export default function Layout({ children }) {
   const [showModal, setShowModal] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
   const searchDebounceRef = useRef(null)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchInputRef = useRef(null)
@@ -137,7 +138,7 @@ export default function Layout({ children }) {
           </div>
         </div>
 
-        {children({ activeNav, searchQuery: debouncedSearch })}
+        {children({ activeNav, searchQuery: debouncedSearch , refreshKey})}
       </main>
 
       {showModal && (
@@ -145,6 +146,7 @@ export default function Layout({ children }) {
           onClose={() => setShowModal(false)}
           onSaved={() => {
             setShowModal(false)
+            setRefreshKey(prev => prev + 1)
             refresh()
           }}
         />

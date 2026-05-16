@@ -13,7 +13,7 @@ const EMPTY_MESSAGES = {
   favorites: { icon: 'ti-star',          text: 'No favorites yet',             sub: 'Star resources to find them quickly.' },
 }
 
-export default function Dashboard({ activeNav = 'all', searchQuery = '' }) {
+export default function Dashboard({ activeNav = 'all', searchQuery = '' , refreshKey = 0 }) {
   const { counts, refresh } = useResources()
   const [resources, setResources] = useState([])
   const [loading, setLoading] = useState(true)
@@ -46,7 +46,7 @@ export default function Dashboard({ activeNav = 'all', searchQuery = '' }) {
       }
     }
     fetchResources()
-  }, [activeNav, searchQuery])
+  }, [activeNav, searchQuery , refreshKey]) 
 
   const handleDelete = async (id) => {
     try {
