@@ -28,7 +28,6 @@ export default function AddResourceModal({ onClose, onSaved }) {
 
   const [imageFile, setImageFile] = useState([])
   const [screenshotResults, setScreenshotResults] = useState(null)
-  const [selectedVideo, setSelectedVideo] = useState(null)
   const [videoPreview, setVideoPreview] = useState(null)
   const [fetchingVideo, setFetchingVideo] = useState(false)
   const [reelCaption, setReelCaption] = useState('')
