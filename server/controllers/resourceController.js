@@ -305,6 +305,7 @@ export const saveReelVideos = async (req, res) => {
       url: video.url,
       tags: tags || [],
       isFavorite: false,
+      userId: req.user._id,
     }))
 
     const incomingIds = resources.map(r => r.videoId).filter(Boolean)
