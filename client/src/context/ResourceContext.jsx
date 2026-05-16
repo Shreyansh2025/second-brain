@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react'
 import { getResources, getTags } from '../services/resourceService'
+import { dummyResources } from '../data/dummyData'
+import { createContext, useContext, useState, useCallback , useEffect } from 'react'
 
 const ResourceContext = createContext(null)
 
@@ -7,8 +8,15 @@ export function ResourceProvider({ children }) {
   const [allResources, setAllResources] = useState([])
   const [tags, setTags] = useState([])
   const [loading, setLoading] = useState(true)
-
+  
   const refresh = useCallback(async () => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setAllResources(dummyResources)
+      setTags(['coding', 'self-help', 'career', 'discipline'])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     try {
       const [resRes, tagsRes] = await Promise.all([
@@ -23,6 +31,11 @@ export function ResourceProvider({ children }) {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+  
 
   const counts = {
     all: allResources.length,

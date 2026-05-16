@@ -2,6 +2,7 @@ import { getResources, deleteResource } from '../services/resourceService.js'
 import { useState, useEffect } from 'react'
 import ResourceCard from '../components/ResourceCard'
 import { useResources } from '../context/ResourceContext'
+import { dummyResources } from '../data/dummyData'
 
 const EMPTY_MESSAGES = {
   all:       { icon: 'ti-brain',         text: 'Your second brain is empty',   sub: 'Add your first resource to get started.' },
@@ -20,6 +21,12 @@ export default function Dashboard({ activeNav = 'all', searchQuery = '' }) {
 
   useEffect(() => {
     const fetchResources = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setResources(dummyResources)
+        setLoading(false)
+        return 
+      } 
       try {
         setLoading(true)
         const params = {}

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Sidebar from './Sidebar'
 import AddResourceModal from './AddResourceModal'
 import { useResources } from '../context/ResourceContext'
+import { useAuth } from '../context/AuthContext'
 
 export default function Layout({ children }) {
   const { counts, tags, refresh } = useResources()
@@ -12,10 +13,7 @@ export default function Layout({ children }) {
   const searchDebounceRef = useRef(null)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchInputRef = useRef(null)
-
-  useEffect(() => {
-    refresh()
-  }, [refresh])
+  const { logout } = useAuth()
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -90,6 +88,7 @@ export default function Layout({ children }) {
           onNavigate={handleNavigate}
           counts={counts}
           tags={tags}
+          onLogout={logout}
         />
       </div>
 

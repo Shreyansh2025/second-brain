@@ -9,7 +9,7 @@ const navItems = [
 
 const tagColors = ['#7F77DD', '#1D9E75', '#EF9F27', '#D4537E', '#5DCAA5', '#D4537E']
 
-export default function Sidebar({ active, onNavigate, counts = {}, tags = [] }) {
+export default function Sidebar({ active, onNavigate, counts = {}, tags = [], onLogout }) {
   return (
     <aside className="w-[200px] h-screen bg-[#141414] border-r border-[#222] flex flex-col overflow-hidden">
 
@@ -75,6 +75,23 @@ export default function Sidebar({ active, onNavigate, counts = {}, tags = [] }) 
             </span>
           </button>
         ))}
+      </div>
+      <div className="mt-auto px-2 py-3 border-t border-[#1e1e1e]">
+        <button
+          onClick={() => onNavigate('settings')}
+          className={`w-full flex items-center gap-2 px-3 py-[6px] rounded-md text-left transition-colors mb-1
+            ${active === 'settings' ? 'bg-[#1e1e2e] text-[#c0bef0]' : 'text-[#555] hover:bg-[#1a1a1a] hover:text-[#888]'}`}
+        >
+          <i className={`ti ti-settings text-sm ${active === 'settings' ? 'text-[#7F77DD]' : 'text-[#555]'}`} />
+          <span className="text-xs">Settings</span>
+        </button>
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-2 px-3 py-[6px] rounded-md text-left text-[#555] hover:bg-[#1a1a1a] hover:text-red-400 transition-colors"
+        >
+          <i className="ti ti-logout text-sm" />
+          <span className="text-xs">Sign out</span>
+        </button>
       </div>
 
       {/* Settings — always pinned at the very bottom, never hidden behind tags */}
