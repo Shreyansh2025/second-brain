@@ -199,7 +199,7 @@ const handleScreenshotUpload = async () => {
         setTimeout(() => onSaved(), 1500)
       } else {
         onSaved()
-        
+
       }
     } catch (error) {
       const message = error.response?.data?.message || 'Save failed'
@@ -294,7 +294,7 @@ const handleScreenshotUpload = async () => {
                 <div className="flex gap-3 p-2 rounded-lg border border-[#534AB7] bg-[#1e1e2e]">
                   <img
                     src={videoPreview.thumbnail}
-                    className="w-20 h-12 rounded object-cover flex-shrink-0"
+                    className="w-20 h-12 rounded object-cover shrink-0"
                   />
                   <div>
                     <p className="text-xs text-[#ccc] font-medium line-clamp-2">
@@ -383,12 +383,12 @@ const handleScreenshotUpload = async () => {
                             : 'border-[#2a2a2a] hover:border-[#444]'
                           }`}
                       >
-                        <img src={video.thumbnail} className="w-20 h-12 rounded object-cover flex-shrink-0" />
+                        <img src={video.thumbnail} className="w-20 h-12 rounded object-cover shrink-0" />
                         <div className="flex-1">
                           <p className="text-xs text-[#ccc] font-medium line-clamp-2">{video.title}</p>
                           <p className="text-[10px] text-[#555]">{video.channel}</p>
                         </div>
-                        <i className={`ti text-sm mt-1 flex-shrink-0
+                        <i className={`ti text-sm mt-1 shrink-0
                           ${selectedReelVideos.includes(video.videoId)
                             ? 'ti-circle-check text-[#7F77DD]'
                             : 'ti-circle text-[#333]'
@@ -464,7 +464,7 @@ const handleScreenshotUpload = async () => {
                           <p className="text-xs text-[#ccc] font-medium line-clamp-2">{video.title}</p>
                           <p className="text-[10px] text-[#555]">{video.channel}</p>
                         </div>
-                        <i className={`ti text-sm mt-1 flex-shrink-0
+                        <i className={`ti text-sm mt-1 shrink-0
                           ${selectedReelVideos.includes(video.videoId)
                             ? 'ti-circle-check text-[#7F77DD]'
                             : 'ti-circle text-[#333]'
