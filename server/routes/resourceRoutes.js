@@ -14,7 +14,8 @@ import {
     saveReelVideos,
     autoTag,
     getTags,
-    getYoutubeDetails
+    getYoutubeDetails,
+    getDailyDigest,
 } from '../controllers/resourceController.js'
 import { upload } from '../config/cloudinary.js'
 import { protect } from '../middleware/auth.js'
@@ -38,6 +39,7 @@ router.post('/youtube-details', aiLimiter, getYoutubeDetails)
 router.post('/process-reel', aiLimiter, processReel)
 router.post('/save-reel-videos', saveReelVideos)
 router.post('/auto-tag', aiLimiter, autoTag)
+router.post('/daily-digest', getDailyDigest)
 router.route('/:id').get(getResource).put(updateResource).delete(deleteResource)
 
 export default router

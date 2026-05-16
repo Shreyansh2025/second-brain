@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import AuthModal from './components/AuthModal'
+import Digest from './pages/Digest'
 
 function AppContent() {
   const { user, loading } = useAuth()
@@ -28,9 +29,9 @@ function AppContent() {
         <ResourceProvider>
           <Layout>
             {(props) =>
-              props.activeNav === 'settings'
-                ? <Settings />
-                : <Dashboard {...props} />
+              props.activeNav === 'settings' ? <Settings /> :
+              props.activeNav === 'digest' ? <Digest /> :
+              <Dashboard {...props} />
             }
           </Layout>
         </ResourceProvider>

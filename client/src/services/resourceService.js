@@ -24,3 +24,4 @@ export const saveReelVideos = (data) => API.post('/resources/save-reel-videos', 
 export const autoTag = (data) => API.post('/resources/auto-tag', data)
 export const getYoutubeDetails = (data) => API.post('/resources/youtube-details', data)
 export const getTags = () => API.get('/resources/tags')
+export const getDailyDigest = () => API.get('/resources/digest')

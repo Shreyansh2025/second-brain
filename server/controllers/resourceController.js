@@ -414,3 +414,45 @@ export const getYoutubeDetails = async (req, res) => {
     res.status(500).json({ success: false, message: error.message })
   }
 }
+
+// DAILY DIGEST
+export const getDailyDigest = async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const resources = await Resource.find({
+      userId: req.user._id,
+      createdAt: { $gte: sevenDaysAgo }
+    }).sort({ createdAt: -1 })
+
+    // Group by day
+    const grouped = {}
+    resources.forEach(r => {
+      const day = new Date(r.createdAt).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric'
+      })
+      if (!grouped[day]) grouped[day] = []
+      grouped[day].push(r)
+    })
+
+    const days = Object.entries(grouped).map(([date, items]) => ({
+      date,
+      items,
+      count: items.length
+    }))
+
+    res.status(200).json({
+      success: true,
+      data: {
+        days,
+        total: resources.length,
+        streak: days.length
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}

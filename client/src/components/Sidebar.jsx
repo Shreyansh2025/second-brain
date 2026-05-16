@@ -5,6 +5,7 @@ const navItems = [
   { icon: 'ti-brand-instagram', label: 'Reels', key: 'reels' },
   { icon: 'ti-file-text', label: 'Notes', key: 'notes' },
   { icon: 'ti-star', label: 'Favorites', key: 'favorites' },
+  { icon: 'ti-calendar-week', label: 'Weekly digest', key: 'digest' },
 ]
 
 const tagColors = ['#7F77DD', '#1D9E75', '#EF9F27', '#D4537E', '#5DCAA5', '#D4537E']
