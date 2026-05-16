@@ -39,7 +39,7 @@ router.post('/youtube-details', aiLimiter, getYoutubeDetails)
 router.post('/process-reel', aiLimiter, processReel)
 router.post('/save-reel-videos', saveReelVideos)
 router.post('/auto-tag', aiLimiter, autoTag)
-router.post('/daily-digest', getDailyDigest)
+router.post('/digest', getDailyDigest)
 router.route('/:id').get(getResource).put(updateResource).delete(deleteResource)
 
 export default router
