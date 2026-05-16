@@ -148,21 +148,23 @@ export default function AddResourceModal({ onClose, onSaved }) {
   }
 
   const handleScreenshotSave = async () => {
-    if (selectedReelVideos.length === 0) return showToast('Please select at least one video')
-    try {
-      setLoading(true)
-      const videosToSave = screenshotResults.videos.filter(v =>
-        selectedReelVideos.includes(v.videoId)
-      )
-      await saveReelVideos({ videos: videosToSave, tags: [] })
-      onSaved()
-    } catch (error) {
-      showToast('Save failed.')
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
+  if (selectedReelVideos.length === 0) return alert('Please select at least one video')
+  try {
+    setLoading(true)
+    const videosToSave = screenshotResults.videos.filter(v =>
+      selectedReelVideos.includes(v.videoId)
+    )
+    console.log('Videos to save:', videosToSave)  // ← add this
+    await saveReelVideos({ videos: videosToSave, tags: [] })
+    onSaved()
+  } catch (error) {
+    const message = error.response?.data?.message || 'Save failed'
+    alert(message)
+    console.error(error)
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleReelProcess = async () => {
     if (!reelCaption) return showToast('Please paste the reel caption first')
