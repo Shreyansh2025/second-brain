@@ -26,7 +26,7 @@ export default function AddResourceModal({ onClose, onSaved }) {
   const [formData, setFormData] = useState({ title: '', url: '', body: '', tags: '' })
   const [toast, setToast] = useState(null)
 
-  const [imageFiles, setImageFiles] = useState([])
+  const [imageFile, setImageFile] = useState([])
   const [screenshotResults, setScreenshotResults] = useState(null)
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [videoPreview, setVideoPreview] = useState(null)
@@ -328,7 +328,7 @@ const handleScreenshotUpload = async () => {
                       type="file"
                       accept="image/*"
                       multiple
-                      onChange={(e) => setImageFiles(Array.from(e.target.files))}
+                      onChange={(e) => setImageFile(Array.from(e.target.files))}
                       className="hidden"
                     />
                     <i className="ti ti-upload text-[#444] text-2xl mb-2 block" />
@@ -338,9 +338,9 @@ const handleScreenshotUpload = async () => {
                     <p className="text-[10px] text-[#444] mb-2">
                       Works with YouTube screenshots, Instagram carousels, paused reels
                     </p>
-                    {imageFiles && imageFiles.length > 0 ? (
+                    {imageFile && imageFile.length > 0 ? (
                       <p className="text-xs text-[#7F77DD] font-medium">
-                        ✓ {imageFiles.length} file{imageFiles.length > 1 ? 's' : ''} selected — ready to upload
+                        ✓ {imageFile.length} file{imageFile.length > 1 ? 's' : ''} selected — ready to upload
                       </p>
                     ) : (
                       <p className="text-xs text-[#534AB7] font-medium">
