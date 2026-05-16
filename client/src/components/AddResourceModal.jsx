@@ -114,19 +114,25 @@ export default function AddResourceModal({ onClose, onSaved }) {
     }
   }
 
-  const handleScreenshotUpload = async () => {
-    if (!imageFiles || imageFiles.length === 0) return showToast('Please select at least one image')
-    try {
-      setLoading(true)
-      const allVideos = []
-      const seenIds = new Set()
+const handleScreenshotUpload = async () => {
+  console.log('handleScreenshotUpload called')
+  console.log('imageFile:', imageFile)
+  if (!imageFile || imageFile.length === 0) return alert('Please select at least one image')
+  try {
+    setLoading(true)
+    console.log('Starting upload loop...')
+    const allVideos = []
+    const seenIds = new Set()
 
-      for (const file of imageFiles) {
-        const form = new FormData()
-        form.append('image', file)
-        const uploadRes = await uploadImage(form)
-        const imageUrl = uploadRes.data.data.imageUrl
-        const processRes = await processScreenshot({ imageUrl })
+    for (const file of imageFile) {
+      console.log('Processing file:', file.name)
+      const form = new FormData()
+      form.append('image', file)
+      const uploadRes = await uploadImage(form)
+      console.log('Upload result:', uploadRes.data)
+      const imageUrl = uploadRes.data.data.imageUrl
+      const processRes = await processScreenshot({ imageUrl })
+      console.log('Process result:', processRes.data)
         const videos = processRes.data.data.videos || []
         for (const video of videos) {
           if (!seenIds.has(video.videoId)) {
@@ -135,10 +141,9 @@ export default function AddResourceModal({ onClose, onSaved }) {
           }
         }
       }
-console.log('allVideos before set:', allVideos)
-console.log('allVideos length:', allVideos.length)
-setScreenshotResults({ videos: allVideos })
-setSelectedReelVideos(allVideos.map(v => v.videoId))
+
+      setScreenshotResults({ videos: allVideos })
+      setSelectedReelVideos(allVideos.map(v => v.videoId))
     } catch (error) {
       const message = error.response?.data?.message || 'Upload failed. Check console.'
       showToast(message)
@@ -149,23 +154,21 @@ setSelectedReelVideos(allVideos.map(v => v.videoId))
   }
 
   const handleScreenshotSave = async () => {
-  if (selectedReelVideos.length === 0) return alert('Please select at least one video')
-  try {
-    setLoading(true)
-    const videosToSave = screenshotResults.videos.filter(v =>
-      selectedReelVideos.includes(v.videoId)
-    )
-    console.log('Videos to save:', videosToSave)  // ← add this
-    await saveReelVideos({ videos: videosToSave, tags: [] })
-    onSaved()
-  } catch (error) {
-    const message = error.response?.data?.message || 'Save failed'
-    alert(message)
-    console.error(error)
-  } finally {
-    setLoading(false)
+    if (selectedReelVideos.length === 0) return showToast('Please select at least one video')
+    try {
+      setLoading(true)
+      const videosToSave = screenshotResults.videos.filter(v =>
+        selectedReelVideos.includes(v.videoId)
+      )
+      await saveReelVideos({ videos: videosToSave, tags: [] })
+      onSaved()
+    } catch (error) {
+      showToast('Save failed.')
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   const handleReelProcess = async () => {
     if (!reelCaption) return showToast('Please paste the reel caption first')
