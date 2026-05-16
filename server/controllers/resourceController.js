@@ -27,7 +27,7 @@ export const createResource = async (req, res) => {
     }
 
     const resource = await Resource.create({
-      userId: req.user?.id,
+    userId: req.user._id,      
       type, title, description, url, body, tags: tags ?? [],
       platform, videoId, channel, thumbnail, siteName,
       imageUrl, extractedText, customType,
@@ -44,6 +44,7 @@ export const getResources = async (req, res) => {
   try {
     const { type, platform, tags, isFavorite, search, page = 1, limit = 30 } = req.query
     let filter = {}
+    if (req.user) filter.userId = req.user._id
     if (type) filter.type = type
     if (platform) filter.platform = platform
     if (isFavorite) filter.isFavorite = isFavorite === 'true'
@@ -98,8 +99,8 @@ export const getResource = async (req, res) => {
 // UPDATE
 export const updateResource = async (req, res) => {
   try {
-    const resource = await Resource.findByIdAndUpdate(
-      req.params.id,
+    const resource = await Resource.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
       req.body,
       { new: true, runValidators: true }
     )
@@ -115,7 +116,10 @@ export const updateResource = async (req, res) => {
 // DELETE
 export const deleteResource = async (req, res) => {
   try {
-    const resource = await Resource.findByIdAndDelete(req.params.id)
+    const resource = await Resource.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user._id
+    })
     if (!resource) {
       return res.status(404).json({ success: false, message: 'Resource not found' })
     }
