@@ -25,7 +25,6 @@ export default function AddResourceModal({ onClose, onSaved }) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({ title: '', url: '', body: '', tags: '' })
   const [toast, setToast] = useState(null)
-
   const [imageFile, setImageFile] = useState([])
   const [screenshotResults, setScreenshotResults] = useState(null)
   const [videoPreview, setVideoPreview] = useState(null)

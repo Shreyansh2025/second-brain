@@ -26,13 +26,13 @@ export const createResource = async (req, res) => {
       return res.status(400).json({ success: false, message: 'type and title are required' })
     }
 
-    const resource = await Resource.create({
-    userId: req.user._id,      
-      type, title, description, url, body, tags: tags ?? [],
-      platform, videoId, channel, thumbnail, siteName,
-      imageUrl, extractedText, customType,
-      isFavorite: false,
-    })
+  const resource = await Resource.create({
+    userId: req.user._id,
+    type, title, description, url, body, tags: tags ?? [],
+    platform, videoId, channel, thumbnail, siteName,
+    imageUrl, extractedText, customType,
+    isFavorite: false,
+  })
     res.status(201).json({ success: true, data: resource })
   } catch (error) {
     res.status(400).json({ success: false, message: error.message })
@@ -309,7 +309,10 @@ export const saveReelVideos = async (req, res) => {
     }))
 
     const incomingIds = resources.map(r => r.videoId).filter(Boolean)
-    const existing = await Resource.find({ videoId: { $in: incomingIds } }).select('videoId')
+    const existing = await Resource.find({ 
+      videoId: { $in: incomingIds },
+      userId: req.user._id 
+    }).select('videoId')
     const existingIds = new Set(existing.map(r => r.videoId))
     const newResources = resources.filter(r => !existingIds.has(r.videoId))
 
@@ -353,8 +356,7 @@ export const autoTag = async (req, res) => {
 // GET ALL UNIQUE TAGS
 export const getTags = async (req, res) => {
   try {
-    const tags = await Resource.distinct('tags')
-    // Filter out empty strings and sort alphabetically
+    const tags = await Resource.distinct('tags', { userId: req.user._id })
     const cleanTags = tags.filter(t => t && t.trim() !== '').sort()
     res.status(200).json({ success: true, data: cleanTags })
   } catch (error) {
