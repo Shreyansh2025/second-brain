@@ -94,20 +94,6 @@ export default function Sidebar({ active, onNavigate, counts = {}, tags = [], on
         </button>
       </div>
 
-      {/* Settings — always pinned at the very bottom, never hidden behind tags */}
-      <div className="px-2 py-3 border-t border-[#1e1e1e] flex-shrink-0">
-        <button
-          onClick={() => onNavigate('settings')}
-          className={`w-full flex items-center gap-2 px-3 py-[6px] rounded-md text-left transition-colors
-            ${active === 'settings'
-              ? 'bg-[#1e1e2e] text-[#c0bef0]'
-              : 'text-[#555] hover:bg-[#1a1a1a] hover:text-[#888]'
-            }`}
-        >
-          <i className={`ti ti-settings text-sm ${active === 'settings' ? 'text-[#7F77DD]' : 'text-[#555]'}`} />
-          <span className="text-xs">Settings</span>
-        </button>
-      </div>
     </aside>
   )
 }

@@ -158,10 +158,16 @@ const handleScreenshotUpload = async () => {
       const videosToSave = screenshotResults.videos.filter(v =>
         selectedReelVideos.includes(v.videoId)
       )
-      await saveReelVideos({ videos: videosToSave, tags: [] })
-      onSaved()
+      const res = await saveReelVideos({ videos: videosToSave, tags: [] })
+      if (res.data.alreadySaved) {
+        showToast('Already in your library', 'success')
+        setTimeout(() => onSaved(), 1500)
+      } else {
+        onSaved()
+      }
     } catch (error) {
-      showToast('Save failed.')
+      const message = error.response?.data?.message || 'Save failed'
+      showToast(message)
       console.error(error)
     } finally {
       setLoading(false)
@@ -187,10 +193,16 @@ const handleScreenshotUpload = async () => {
     try {
       setLoading(true)
       const videosToSave = reelResults.filter(v => selectedReelVideos.includes(v.videoId))
-      await saveReelVideos({ videos: videosToSave, tags: [] })
-      onSaved()
+      const res = await saveReelVideos({ videos: videosToSave, tags: [] })
+      if (res.data.alreadySaved) {
+        showToast('Already in your library', 'success')
+        setTimeout(() => onSaved(), 1500)
+      } else {
+        onSaved()
+      }
     } catch (error) {
-      showToast('Save failed.')
+      const message = error.response?.data?.message || 'Save failed'
+      showToast(message)
       console.error(error)
     } finally {
       setLoading(false)
