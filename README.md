@@ -7,10 +7,14 @@
     <a href="#tech-stack">Tech Stack</a> •
     <a href="#getting-started">Getting Started</a>
   </p>
+  
   <img src="https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react" />
   <img src="https://img.shields.io/badge/Node.js-Express-green?style=flat-square&logo=node.js" />
   <img src="https://img.shields.io/badge/MongoDB-Atlas-green?style=flat-square&logo=mongodb" />
   <img src="https://img.shields.io/badge/Deployed-Vercel%20%2B%20Render-black?style=flat-square" />
+
+  <br/><br/>
+  <img src="screenshots/dashboard.png" alt="Second Brain Dashboard" width="100%" />
 </div>
 
 ---
