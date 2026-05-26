@@ -112,15 +112,40 @@ export default function ResourceCard({ resource, onDelete, onFavoriteToggle }) {
       )}
 
       <div
-        className="bg-[#1a1a1a] border border-[#1e1e1e] rounded-lg overflow-hidden cursor-pointer hover:border-[#2a2a2a] transition-colors"
+        className="bg-[#1a1a1a] border border-[#1e1e1e] rounded-lg overflow-hidden cursor-pointer hover:border-[#2a2a2a] transition-colors relative"
         onClick={() => {
-          const url =
-            currentResource.type === 'video'
-              ? `https://www.youtube.com/watch?v=${currentResource.videoId}`
-              : currentResource.url
+          if (confirmDelete) { setConfirmDelete(false); return }
+          const url = currentResource.type === 'video'
+            ? `https://www.youtube.com/watch?v=${currentResource.videoId}`
+            : currentResource.url
           if (url) window.open(url, '_blank')
         }}
       >
+        {/* Delete overlay — shown when confirmDelete is true */}
+        {confirmDelete && (
+          <div
+            className="absolute inset-0 bg-black/80 z-10 flex flex-col items-center justify-center gap-3 rounded-lg"
+            onClick={e => e.stopPropagation()}
+          >
+            <i className="ti ti-trash text-red-400 text-2xl" />
+            <p className="text-white text-xs font-medium">Delete this resource?</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onDelete(currentResource._id)}
+                className="px-4 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs rounded-lg border border-red-500/30 transition-colors"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="px-4 py-1.5 bg-[#2a2a2a] hover:bg-[#333] text-[#888] text-xs rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Preview Area */}
         <div className="h-24 relative overflow-hidden">
           {currentResource.type === 'video' && currentResource.thumbnail ? (
@@ -209,28 +234,13 @@ export default function ResourceCard({ resource, onDelete, onFavoriteToggle }) {
                 />
               )}
 
-              {/* Inline delete confirmation */}
-              {confirmDelete ? (
-                <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-                  <button
-                    onClick={() => onDelete(currentResource._id)}
-                    className="text-[9px] text-red-400 hover:text-red-300"
-                  >
-                    Yes
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(false)}
-                    className="text-[9px] text-[#555] hover:text-[#888]"
-                  >
-                    No
-                  </button>
-                </div>
-              ) : (
-                <i
-                  className="ti ti-trash text-[#444] text-xs cursor-pointer hover:text-red-500"
-                  onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
-                />
-              )}
+              <i
+                className="ti ti-trash text-[#444] text-xs cursor-pointer hover:text-red-500"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setConfirmDelete(true)
+                }}
+              />
             </div>
           </div>
         </div>
