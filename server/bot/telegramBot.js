@@ -20,7 +20,7 @@ const getAutoTags = async (title) => {
         role: 'user', 
         content: `Suggest 3-5 relevant tags for: "${title}". Return ONLY a JSON array of lowercase strings. Example: ["coding","react"]` 
       }],
-      model: 'llama3-8b-8192',
+      model: 'llama-3.1-8b-instant',
       temperature: 0.3,
     })
     const text = completion.choices[0].message.content.trim()
@@ -182,7 +182,6 @@ export const setupBot = (app) => {
               tags,
             })
 
-            const tags = await getAutoTags(title) 
             const tagText = tags.length > 0 ? tags.join(', ') : 'no tags'
             ctx.reply(`✅ Saved!\n\n▶️ ${title}\n🏷️ ${tagText}`)
           } else {
@@ -257,7 +256,7 @@ export const setupBot = (app) => {
           role: 'user',
           content: `Extract the YouTube video title from this OCR text. Return only the title as plain text.\n\nOCR: ${extractedText}`
         }],
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         temperature: 0.3,
       })
       const titleLine = completion.choices[0].message.content.trim()
