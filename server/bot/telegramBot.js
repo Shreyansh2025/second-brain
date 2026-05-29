@@ -177,13 +177,25 @@ export const setupBot = (app) => {
               tags,
             })
 
-            ctx.reply(`✅ Saved!\n\n▶️ ${title}\n🏷️ ${tags.join(', ')}`)
+            const tags = await getAutoTags(title) 
+            const tagText = tags.length > 0 ? tags.join(', ') : 'no tags'
+            ctx.reply(`✅ Saved!\n\n▶️ ${title}\n🏷️ ${tagText}`)
           } else {
             ctx.reply('❌ Could not fetch video details.')
           }
         } else {
           // Regular URL — save as link
-          const title = text.replace(url, '').trim() || url
+          let title = text.replace(url, '').trim()
+          if (!title) {
+            try {
+              const pageRes = await fetch(url)
+              const html = await pageRes.text()
+              const match = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+              title = match ? match[1].trim() : new URL(url).hostname
+            } catch {
+              title = new URL(url).hostname
+            }
+          }
           const siteName = new URL(url).hostname
           const tags = await getAutoTags(title || siteName)
 
