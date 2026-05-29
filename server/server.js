@@ -1,5 +1,5 @@
 import 'dotenv/config'
-
+import { setupBot } from './bot/telegramBot.js'
 import express from 'express'
 import cors from 'cors'
 import connectDB from './config/db.js'
@@ -8,6 +8,7 @@ import resourceRoutes from './routes/resourceRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 
 connectDB()
+setupBot()
 
 const app = express()
 app.use(cors({
