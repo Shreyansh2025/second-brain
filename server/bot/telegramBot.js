@@ -6,143 +6,101 @@ import Groq from 'groq-sdk'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
-// Helper — find user by telegram ID
 const getUser = async (telegramId) => {
   return await User.findOne({ telegramId: String(telegramId) })
 }
 
-// Helper — auto tag using Groq
 const getAutoTags = async (title) => {
   try {
-    console.log('Getting tags for:', title)
     const completion = await groq.chat.completions.create({
-      messages: [{ 
-        role: 'user', 
-        content: `Suggest 3-5 relevant tags for: "${title}". Return ONLY a JSON array of lowercase strings. Example: ["coding","react"]` 
+      messages: [{
+        role: 'user',
+        content: `Suggest 3-5 relevant tags for: "${title}". Return ONLY a JSON array of lowercase strings. Example: ["coding","react"]`
       }],
-      model: 'llama-3.1-8b-instant',
+      model: 'llama3-8b-8192',
       temperature: 0.3,
     })
     const text = completion.choices[0].message.content.trim()
-    console.log('Groq response:', text)
     const cleaned = text.replace(/```json|```/g, '').trim()
-    const tags = JSON.parse(cleaned)
-    console.log('Parsed tags:', tags)
-    return tags
+    return JSON.parse(cleaned)
   } catch (err) {
     console.error('getAutoTags error:', err.message)
     return []
   }
 }
 
-export const setupBot = (app) => {
+export const setupBot = () => {
   const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
 
-  // /start command
   bot.start(async (ctx) => {
     const user = await getUser(ctx.from.id)
     if (user) {
-      ctx.reply(`Welcome back ${user.name}! 🧠\n\nSend me anything to save it to your Second Brain:\n\n🔗 A URL → saved as link\n▶️ A YouTube URL → saved as video\n📸 A screenshot → OCR + YouTube search\n📝 Any text → saved as note\n\n/list — see recent saves\n/digest — this week's saves\n/search [query] — search your brain`)
+      ctx.reply(`Welcome back ${user.name}! 🧠\n\nSend me anything to save it:\n\n🔗 URL → link\n▶️ YouTube URL → video\n📸 Screenshot → OCR pipeline\n📝 Text → note\n\n/list — recent saves\n/digest — this week\n/search [query] — search`)
     } else {
-      ctx.reply(`Welcome to Second Brain Bot! 🧠\n\nTo connect your account, use:\n/connect your@email.com yourpassword`)
+      ctx.reply(`Welcome to Second Brain Bot! 🧠\n\nConnect your account:\n/connect your@email.com yourpassword`)
     }
   })
 
-  // /connect command — links telegram to Second Brain account
   bot.command('connect', async (ctx) => {
     const parts = ctx.message.text.split(' ')
-    if (parts.length < 3) {
-      return ctx.reply('Usage: /connect your@email.com yourpassword')
-    }
-    const email = parts[1]
-    const password = parts[2]
-
+    if (parts.length < 3) return ctx.reply('Usage: /connect your@email.com yourpassword')
+    const [, email, password] = parts
     try {
       const user = await User.findOne({ email })
-      if (!user) return ctx.reply('❌ Email not found. Register at the website first.')
-
+      if (!user) return ctx.reply('❌ Email not found. Register on the website first.')
       const isMatch = await user.matchPassword(password)
       if (!isMatch) return ctx.reply('❌ Wrong password.')
-
       user.telegramId = String(ctx.from.id)
       await user.save()
-
-      ctx.reply(`✅ Connected! Welcome ${user.name}.\n\nYour Second Brain is ready. Send me anything to save it.`)
+      ctx.reply(`✅ Connected! Welcome ${user.name}. Your Second Brain is ready.`)
     } catch (err) {
       ctx.reply('Something went wrong. Try again.')
     }
   })
 
-  // /list command
   bot.command('list', async (ctx) => {
     const user = await getUser(ctx.from.id)
     if (!user) return ctx.reply('Connect first: /connect email password')
-
-    const resources = await Resource.find({ userId: user._id })
-      .sort({ createdAt: -1 })
-      .limit(5)
-
+    const resources = await Resource.find({ userId: user._id }).sort({ createdAt: -1 }).limit(5)
     if (resources.length === 0) return ctx.reply('Nothing saved yet.')
-
     const list = resources.map((r, i) => {
-      const title = r.title || 'Untitled'
-      const type = r.type === 'video' ? '▶️' : r.type === 'link' ? '🔗' : '📝'
-      return `${i + 1}. ${type} ${title}`
+      const icon = r.type === 'video' ? '▶️' : r.type === 'link' ? '🔗' : '📝'
+      return `${i + 1}. ${icon} ${r.title || 'Untitled'}`
     }).join('\n')
-
     ctx.reply(`Your recent saves:\n\n${list}`)
   })
 
-  // /digest command
   bot.command('digest', async (ctx) => {
     const user = await getUser(ctx.from.id)
     if (!user) return ctx.reply('Connect first: /connect email password')
-
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-    const resources = await Resource.find({
-      userId: user._id,
-      createdAt: { $gte: sevenDaysAgo }
-    }).sort({ createdAt: -1 })
-
+    const resources = await Resource.find({ userId: user._id, createdAt: { $gte: sevenDaysAgo } }).sort({ createdAt: -1 })
     if (resources.length === 0) return ctx.reply('Nothing saved this week.')
-
-    ctx.reply(`📅 This week you saved ${resources.length} resources:\n\n${
-      resources.map(r => `• ${r.title || 'Untitled'}`).join('\n')
-    }`)
+    ctx.reply(`📅 This week: ${resources.length} resources\n\n${resources.map(r => `• ${r.title || 'Untitled'}`).join('\n')}`)
   })
 
-  // /search command
   bot.command('search', async (ctx) => {
     const user = await getUser(ctx.from.id)
     if (!user) return ctx.reply('Connect first: /connect email password')
-
     const query = ctx.message.text.replace('/search', '').trim()
     if (!query) return ctx.reply('Usage: /search discipline')
-
     const regex = { $regex: query, $options: 'i' }
     const resources = await Resource.find({
       userId: user._id,
       $or: [{ title: regex }, { tags: regex }, { body: regex }, { extractedText: regex }]
     }).limit(5)
-
     if (resources.length === 0) return ctx.reply(`No results for "${query}"`)
-
     const list = resources.map(r => {
-      const type = r.type === 'video' ? '▶️' : r.type === 'link' ? '🔗' : '📝'
-      const url = r.url ? `\n${r.url}` : ''
-      return `${type} ${r.title}${url}`
+      const icon = r.type === 'video' ? '▶️' : r.type === 'link' ? '🔗' : '📝'
+      return `${icon} ${r.title}${r.url ? '\n' + r.url : ''}`
     }).join('\n\n')
-
-    ctx.reply(`Search results for "${query}":\n\n${list}`)
+    ctx.reply(`Results for "${query}":\n\n${list}`)
   })
 
-  // Handle text messages — save as note or detect URL
   bot.on('text', async (ctx) => {
     const user = await getUser(ctx.from.id)
     if (!user) return ctx.reply('Connect first: /connect email password')
-
     const text = ctx.message.text
     if (text.startsWith('/')) return
 
@@ -151,11 +109,10 @@ export const setupBot = (app) => {
 
     if (urls) {
       const url = urls[0]
-      ctx.reply('🔄 Saving...')
-
+      await ctx.reply('🔄 Saving...')
       try {
-        // YouTube URL
         if (url.includes('youtube.com/watch') || url.includes('youtu.be')) {
+          // YouTube
           const videoId = url.includes('youtu.be')
             ? url.split('youtu.be/')[1]?.split('?')[0]
             : new URL(url).searchParams.get('v')
@@ -169,7 +126,6 @@ export const setupBot = (app) => {
           if (item) {
             const title = item.snippet.title
             const tags = await getAutoTags(title)
-
             await Resource.create({
               userId: user._id,
               type: 'video',
@@ -181,18 +137,16 @@ export const setupBot = (app) => {
               url: `https://www.youtube.com/watch?v=${videoId}`,
               tags,
             })
-
-            const tagText = tags.length > 0 ? tags.join(', ') : 'no tags'
-            ctx.reply(`✅ Saved!\n\n▶️ ${title}\n🏷️ ${tagText}`)
+            ctx.reply(`✅ Saved!\n\n▶️ ${title}\n🏷️ ${tags.length > 0 ? tags.join(', ') : 'no tags'}`)
           } else {
             ctx.reply('❌ Could not fetch video details.')
           }
         } else {
-          // Regular URL — save as link
+          // Regular link — auto fetch page title
           let title = text.replace(url, '').trim()
           if (!title) {
             try {
-              const pageRes = await fetch(url)
+              const pageRes = await fetch(url, { signal: AbortSignal.timeout(5000) })
               const html = await pageRes.text()
               const match = html.match(/<title[^>]*>([^<]+)<\/title>/i)
               title = match ? match[1].trim() : new URL(url).hostname
@@ -201,25 +155,23 @@ export const setupBot = (app) => {
             }
           }
           const siteName = new URL(url).hostname
-          const tags = await getAutoTags(title || siteName)
-
+          const tags = await getAutoTags(title)
           await Resource.create({
             userId: user._id,
             type: 'link',
-            title: title || siteName,
+            title,
             url,
             siteName,
             tags,
           })
-
-          ctx.reply(`✅ Saved!\n\n🔗 ${title || siteName}\n🏷️ ${tags.join(', ')}`)
+          ctx.reply(`✅ Saved!\n\n🔗 ${title}\n🏷️ ${tags.length > 0 ? tags.join(', ') : 'no tags'}`)
         }
       } catch (err) {
         console.error('Bot URL error:', err)
         ctx.reply('❌ Failed to save. Try again.')
       }
     } else {
-      // Plain text — save as note
+      // Plain text → note
       try {
         const tags = await getAutoTags(text.slice(0, 100))
         await Resource.create({
@@ -229,34 +181,26 @@ export const setupBot = (app) => {
           body: text,
           tags,
         })
-        ctx.reply(`✅ Note saved!\n🏷️ ${tags.join(', ')}`)
+        ctx.reply(`✅ Note saved!\n🏷️ ${tags.length > 0 ? tags.join(', ') : 'no tags'}`)
       } catch (err) {
         ctx.reply('❌ Failed to save note.')
       }
     }
   })
 
-  // Handle photos — OCR pipeline
   bot.on('photo', async (ctx) => {
     const user = await getUser(ctx.from.id)
     if (!user) return ctx.reply('Connect first: /connect email password')
-
-    ctx.reply('📸 Processing image... (this takes ~15 seconds)')
-
+    await ctx.reply('📸 Processing... (~15 seconds)')
     try {
       const photo = ctx.message.photo[ctx.message.photo.length - 1]
       const fileLink = await ctx.telegram.getFileLink(photo.file_id)
-      const imageUrl = fileLink.href
-
-      const { data: { text } } = await Tesseract.recognize(imageUrl, 'eng')
+      const { data: { text } } = await Tesseract.recognize(fileLink.href, 'eng')
       const extractedText = text.trim()
 
       const completion = await groq.chat.completions.create({
-        messages: [{
-          role: 'user',
-          content: `Extract the YouTube video title from this OCR text. Return only the title as plain text.\n\nOCR: ${extractedText}`
-        }],
-        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: `Extract the YouTube video title from this OCR text. Return only the title.\n\nOCR: ${extractedText}` }],
+        model: 'llama3-8b-8192',
         temperature: 0.3,
       })
       const titleLine = completion.choices[0].message.content.trim()
@@ -271,7 +215,6 @@ export const setupBot = (app) => {
         const title = item.snippet.title
         const videoId = item.id.videoId
         const tags = await getAutoTags(title)
-
         await Resource.create({
           userId: user._id,
           type: 'video',
@@ -284,10 +227,9 @@ export const setupBot = (app) => {
           extractedText,
           tags,
         })
-
         ctx.reply(`✅ Found and saved!\n\n▶️ ${title}\n🔗 https://youtube.com/watch?v=${videoId}\n🏷️ ${tags.join(', ')}`)
       } else {
-        ctx.reply(`❌ Could not find a matching video.\n\nExtracted text:\n${extractedText.slice(0, 200)}`)
+        ctx.reply(`❌ No video found.\n\nExtracted text:\n${extractedText.slice(0, 200)}`)
       }
     } catch (err) {
       console.error('Bot photo error:', err)
@@ -295,13 +237,9 @@ export const setupBot = (app) => {
     }
   })
 
-  // Launch bot
   bot.launch()
   console.log('🤖 Telegram bot is running')
-
-  // Graceful shutdown
   process.once('SIGINT', () => bot.stop('SIGINT'))
   process.once('SIGTERM', () => bot.stop('SIGTERM'))
-
   return bot
 }
