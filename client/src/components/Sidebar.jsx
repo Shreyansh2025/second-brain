@@ -12,10 +12,10 @@ const tagColors = ['#7F77DD', '#1D9E75', '#EF9F27', '#D4537E', '#5DCAA5']
 
 export default function Sidebar({ active, onNavigate, counts = {}, tags = [], onLogout }) {
   return (
-    <aside className="w-50 h-screen bg-[#141414] border-r border-[#222] flex flex-col shrink-0">
+    <aside className="w-[200px] h-screen bg-[#141414] border-r border-[#222] flex flex-col flex-shrink-0">
 
       {/* Logo */}
-      <div className="px-4 py-4 border-b border-[#222] flex items-center gap-2 shrink-0">
+      <div className="px-4 py-4 border-b border-[#222] flex items-center gap-2 flex-shrink-0">
         <div className="w-6 h-6 bg-[#7F77DD] rounded-md flex items-center justify-center">
           <i className="ti ti-brain text-white text-xs" />
         </div>
@@ -68,7 +68,7 @@ export default function Sidebar({ active, onNavigate, counts = {}, tags = [], on
                 ${active === `tag:${tag}` ? 'bg-[#1e1e2e]' : 'hover:bg-[#1a1a1a]'}`}
             >
               <div
-                className="w-1.5 h-1.5 rounded-full shrink-0"
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{ backgroundColor: tagColors[index % tagColors.length] }}
               />
               <span className={`text-xs truncate ${active === `tag:${tag}` ? 'text-[#c0bef0]' : 'text-[#555]'}`}>
@@ -81,7 +81,7 @@ export default function Sidebar({ active, onNavigate, counts = {}, tags = [], on
       </div>
 
       {/* Bottom — always visible, never scrolls */}
-      <div className="shrink-0 px-2 py-3 border-t border-[#1e1e1e]">
+      <div className="flex-shrink-0 px-2 py-3 border-t border-[#1e1e1e]">
         <button
           onClick={() => onNavigate('settings')}
           className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left transition-colors mb-1
