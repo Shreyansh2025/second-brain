@@ -14,6 +14,7 @@ const getUser = async (telegramId) => {
 // Helper — auto tag using Groq
 const getAutoTags = async (title) => {
   try {
+    console.log('Getting tags for:', title)
     const completion = await groq.chat.completions.create({
       messages: [{ 
         role: 'user', 
@@ -23,9 +24,13 @@ const getAutoTags = async (title) => {
       temperature: 0.3,
     })
     const text = completion.choices[0].message.content.trim()
+    console.log('Groq response:', text)
     const cleaned = text.replace(/```json|```/g, '').trim()
-    return JSON.parse(cleaned)
-  } catch {
+    const tags = JSON.parse(cleaned)
+    console.log('Parsed tags:', tags)
+    return tags
+  } catch (err) {
+    console.error('getAutoTags error:', err.message)
     return []
   }
 }
