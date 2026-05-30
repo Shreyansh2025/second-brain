@@ -1,3 +1,7 @@
+import { useEffect, useRef } from 'react'
+import { io } from 'socket.io-client'
+import { useAuth } from '../context/AuthContext'
+
 export function useSocket(onResourceAdded, onResourceDeleted) {
   const { user } = useAuth()
   const socketRef = useRef(null)
@@ -20,4 +24,5 @@ export function useSocket(onResourceAdded, onResourceDeleted) {
       socket.disconnect()
     }
   }, [user])
+  // NO return here
 }
