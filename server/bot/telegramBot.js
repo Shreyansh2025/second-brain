@@ -22,7 +22,12 @@ const getAutoTags = async (title) => {
     })
     const text = completion.choices[0].message.content.trim()
     const cleaned = text.replace(/```json|```/g, '').trim()
-    return JSON.parse(cleaned)
+    
+    // Find JSON array anywhere in the response
+    const match = cleaned.match(/\[.*?\]/s)
+    if (!match) return []
+    
+    return JSON.parse(match[0])
   } catch (err) {
     console.error('getAutoTags error:', err.message)
     return []
