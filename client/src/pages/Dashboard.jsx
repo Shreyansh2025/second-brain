@@ -51,26 +51,6 @@ export default function Dashboard({ activeNav = 'all', searchQuery = '' , refres
     fetchResources()
   }, [activeNav, searchQuery , refreshKey]) 
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const token = localStorage.getItem('token')
-      if (!token) return
-      try {
-        const params = {}
-        if (activeNav === 'links') params.type = 'link'
-        if (activeNav === 'youtube') { params.type = 'video'; params.platform = 'youtube' }
-        if (activeNav === 'reels') { params.type = 'video'; params.platform = 'instagram' }
-        if (activeNav === 'notes') params.type = 'note'
-        if (activeNav === 'favorites') params.isFavorite = true
-        if (activeNav.startsWith('tag:')) params.tags = activeNav.replace('tag:', '')
-        const res = await getResources(params)
-        setResources(res.data.data)
-      } catch (err) {
-        console.error('Auto refresh failed:', err)
-      }
-    }, 30000)
-    return () => clearInterval(interval)
-  }, [activeNav])
 
   useSocket(
   (newResource) => {
