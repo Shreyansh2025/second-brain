@@ -3,6 +3,7 @@ import Groq from 'groq-sdk'
 import { decodeHtml } from '../utils/decodeHtml.js'
 import { searchYouTube } from '../utils/youtube.js'
 import { getWorker } from '../utils/tesseractWorker.js'
+import { io } from '../server.js'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
@@ -33,6 +34,9 @@ export const createResource = async (req, res) => {
     imageUrl, extractedText, customType,
     isFavorite: false,
   })
+  // Notify connected clients of this user
+    io.to(`user:${resource.userId}`).emit('resource:added', resource)
+
     res.status(201).json({ success: true, data: resource })
   } catch (error) {
     res.status(400).json({ success: false, message: error.message })
@@ -123,6 +127,7 @@ export const deleteResource = async (req, res) => {
     if (!resource) {
       return res.status(404).json({ success: false, message: 'Resource not found' })
     }
+    io.to(`user:${resource.userId}`).emit('resource:deleted', { id: req.params.id })
     res.status(200).json({ success: true, message: 'Resource deleted' })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
@@ -330,6 +335,10 @@ export const saveReelVideos = async (req, res) => {
       message: `${saved.length} videos saved`,
       data: saved,
     })
+    // Notify for each saved resource
+      saved.forEach(r => {
+        io.to(`user:${r.userId}`).emit('resource:added', r)
+      })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import ResourceCard from '../components/ResourceCard'
 import { useResources } from '../context/ResourceContext'
 import { dummyResources } from '../data/dummyData'
+import { useSocket } from '../hooks/useSocket'
 
 const EMPTY_MESSAGES = {
   all:       { icon: 'ti-brain',         text: 'Your second brain is empty',   sub: 'Add your first resource to get started.' },
@@ -71,6 +72,30 @@ export default function Dashboard({ activeNav = 'all', searchQuery = '' , refres
     return () => clearInterval(interval)
   }, [activeNav])
 
+  useSocket(
+  (newResource) => {
+    // New resource arrived — add to top of list
+    setResources(prev => {
+      // Only add if it matches current filter
+      const matchesFilter =
+        activeNav === 'all' ||
+        (activeNav === 'youtube' && newResource.platform === 'youtube') ||
+        (activeNav === 'links' && newResource.type === 'link') ||
+        (activeNav === 'notes' && newResource.type === 'note') ||
+        (activeNav === 'reels' && newResource.platform === 'instagram')
+      
+      if (!matchesFilter) return prev
+      // Avoid duplicates
+      if (prev.find(r => r._id === newResource._id)) return prev
+      return [newResource, ...prev]
+    })
+    refresh() // update sidebar counts too
+  },
+  (deletedId) => {
+    setResources(prev => prev.filter(r => r._id !== deletedId))
+    refresh()
+  }
+)
   const handleDelete = async (id) => {
     try {
       await deleteResource(id)
