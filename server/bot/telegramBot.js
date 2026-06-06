@@ -203,13 +203,64 @@ export const setupBot = () => {
       const { data: { text } } = await Tesseract.recognize(fileLink.href, 'eng')
       const extractedText = text.trim()
 
+      // Check if image contains multiple URLs — save as links
+      const urlRegex = /(https?:\/\/[^\s]+)/g
+      const foundUrls = extractedText.match(urlRegex)
+
+      if (foundUrls && foundUrls.length > 2) {
+        const tags = await getAutoTags(extractedText.slice(0, 100))
+        const saved = []
+        for (const url of foundUrls.slice(0, 10)) {
+          try {
+            const siteName = new URL(url).hostname
+            await Resource.create({
+              userId: user._id,
+              type: 'link',
+              title: siteName,
+              url,
+              siteName,
+              tags,
+            })
+            saved.push(siteName)
+          } catch { continue }
+        }
+        return ctx.reply(`✅ Saved ${saved.length} links!\n\n${saved.map(u => `🔗 ${u}`).join('\n')}`)
+      }
+
+      // Try to find YouTube video
       const completion = await groq.chat.completions.create({
-        messages: [{ role: 'user', content: `Extract the YouTube video title from this OCR text. Return only the title.\n\nOCR: ${extractedText}` }],
+        messages: [{ 
+          role: 'user', 
+          content: `Look at this OCR text from a screenshot. 
+
+      Is this a screenshot OF a YouTube video player showing a specific video? 
+      Signs it IS a YouTube video: has channel name, view count, "ago", video duration timestamp.
+      Signs it is NOT: it's a LinkedIn post, infographic, list of courses, article, etc.
+
+      If YES return ONLY the video title.
+      If NO return exactly: NOT_A_VIDEO
+
+      OCR: ${extractedText}` 
+        }],
         model: 'llama-3.1-8b-instant',
         temperature: 0.3,
       })
       const titleLine = completion.choices[0].message.content.trim()
 
+      if (titleLine === 'NOT_A_VIDEO') {
+        // Save as note with extracted text
+        const tags = await getAutoTags(extractedText.slice(0, 100))
+        await Resource.create({
+          userId: user._id,
+          type: 'note',
+          title: extractedText.slice(0, 60) + (extractedText.length > 60 ? '...' : ''),
+          body: extractedText,
+          tags,
+        })
+        return ctx.reply(`✅ Saved as note!\n\n📝 Text extracted from image\n🏷️ ${tags.length > 0 ? tags.join(', ') : 'no tags'}\n\nPreview:\n${extractedText.slice(0, 150)}`)
+      }
+
+      // Search YouTube
       const response = await fetch(
         `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(titleLine)}&type=video&maxResults=1&key=${process.env.YOUTUBE_API_KEY}`
       )
@@ -234,7 +285,16 @@ export const setupBot = () => {
         })
         ctx.reply(`✅ Found and saved!\n\n▶️ ${title}\n🔗 https://youtube.com/watch?v=${videoId}\n🏷️ ${tags.join(', ')}`)
       } else {
-        ctx.reply(`❌ No video found.\n\nExtracted text:\n${extractedText.slice(0, 200)}`)
+        // YouTube search returned nothing — save as note
+        const tags = await getAutoTags(extractedText.slice(0, 100))
+        await Resource.create({
+          userId: user._id,
+          type: 'note',
+          title: extractedText.slice(0, 60) + '...',
+          body: extractedText,
+          tags,
+        })
+        ctx.reply(`✅ Saved as note!\n\n📝 No video found, saved text instead\n🏷️ ${tags.length > 0 ? tags.join(', ') : 'no tags'}`)
       }
     } catch (err) {
       console.error('Bot photo error:', err)
