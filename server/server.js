@@ -8,6 +8,8 @@ import errorhandler from './middleware/errorHandler.js'
 import resourceRoutes from './routes/resourceRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 import { setupBot } from './bot/telegramBot.js'
+import jwt from 'jsonwebtoken'
+import User from './models/User.js'
 
 connectDB()
 
@@ -43,21 +45,52 @@ const io = new Server(httpServer, {
   }
 })
 
+// Authenticate every Socket.IO connection using the existing JWT.
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token
+
+    if (typeof token !== 'string' || !token) {
+      return next(new Error('Authentication required'))
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
+    if (typeof decoded !== 'object' || !decoded.id) {
+      return next(new Error('Invalid authentication token'))
+    }
+
+    const user = await User.findById(decoded.id).select('_id')
+
+    if (!user) {
+      return next(new Error('User not found'))
+    }
+
+    // Identity comes from the verified token and database,
+    // never from a user ID supplied by the client.
+    socket.data.userId = user._id.toString()
+
+    next()
+  } catch {
+    next(new Error('Authentication failed'))
+  }
+})
+
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id)
-  
-  // Client tells us which user they are
-  socket.on('join', (userId) => {
-    socket.join(`user:${userId}`)
-    console.log(`User ${userId} joined their room`)
-  })
+  const userId = socket.data.userId
+
+  // Only the verified user can join this room.
+  socket.join(`user:${userId}`)
+
+  console.log(`Authenticated socket connected: ${socket.id}`)
+  console.log(`User ${userId} joined their room`)
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id)
   })
 })
 
-// Export io so controllers can use it
+// Export io so controllers can use it.
 export { io }
 
 if (process.env.NODE_ENV === 'production') {

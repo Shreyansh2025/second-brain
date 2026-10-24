@@ -21,19 +21,25 @@ export function useSocket(onResourceAdded, onResourceDeleted) {
   useEffect(() => {
     if (!user) return
 
+    const token = localStorage.getItem('token')
+
+    if (!token) return
+
     console.log('Connecting socket...')
 
     const socket = io(
       import.meta.env.VITE_API_URL?.replace('/api', '') ||
         'http://localhost:5000',
-      { withCredentials: true }
+      {
+        withCredentials: true,
+        auth: { token },
+      }
     )
 
     socketRef.current = socket
 
     socket.on('connect', () => {
       console.log('Socket connected:', socket.id)
-      socket.emit('join', user._id)
     })
 
     socket.on('connect_error', (err) => {
