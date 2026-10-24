@@ -90,30 +90,104 @@ export const getResources = async (req, res) => {
 // GET ONE
 export const getResource = async (req, res) => {
   try {
-    const resource = await Resource.findById(req.params.id)
+    const resource = await Resource.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    })
+
     if (!resource) {
-      return res.status(404).json({ success: false, message: 'Resource not found' })
+      return res.status(404).json({
+        success: false,
+        message: 'Resource not found',
+      })
     }
-    res.status(200).json({ success: true, data: resource })
+
+    res.status(200).json({
+      success: true,
+      data: resource,
+    })
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+    const status = error.name === 'CastError' ? 400 : 500
+
+    res.status(status).json({
+      success: false,
+      message: status === 400 ? 'Invalid resource ID' : 'Failed to fetch resource',
+    })
   }
 }
 
 // UPDATE
 export const updateResource = async (req, res) => {
   try {
-    const resource = await Resource.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user._id },
-      req.body,
-      { returnDocument: 'after', runValidators: true }
-    )
-    if (!resource) {
-      return res.status(404).json({ success: false, message: 'Resource not found' })
+    const allowedFields = [
+      'type',
+      'title',
+      'description',
+      'tags',
+      'isFavorite',
+      'url',
+      'siteName',
+      'previewImage',
+      'platform',
+      'videoId',
+      'channel',
+      'duration',
+      'thumbnail',
+      'imageUrl',
+      'extractedText',
+      'youtubeVideoId',
+      'youtubeTitle',
+      'body',
+      'customType',
+    ]
+
+    const updates = {}
+
+    for (const field of allowedFields) {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        updates[field] = req.body[field]
+      }
     }
-    res.status(200).json({ success: true, data: resource })
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields provided',
+      })
+    }
+
+    const resource = await Resource.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user._id,
+      },
+      { $set: updates },
+      {
+        returnDocument: 'after',
+        runValidators: true,
+      }
+    )
+
+    if (!resource) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resource not found',
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      data: resource,
+    })
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message })
+    const status = error.name === 'CastError' ? 400 : 500
+
+    res.status(status).json({
+      success: false,
+      message: status === 400
+        ? 'Invalid resource ID or field value'
+        : 'Failed to update resource',
+    })
   }
 }
 
