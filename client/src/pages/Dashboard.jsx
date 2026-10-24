@@ -1,7 +1,7 @@
 import { getResources, deleteResource } from '../services/resourceService.js'
 import { useState, useEffect } from 'react'
 import ResourceCard from '../components/ResourceCard'
-import { useResources } from '../context/ResourceContext'
+import { useResources } from '../hooks/useResources'
 import { dummyResources } from '../data/dummyData'
 import { useSocket } from '../hooks/useSocket'
 

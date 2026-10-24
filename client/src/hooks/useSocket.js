@@ -1,22 +1,35 @@
 import { useEffect, useRef } from 'react'
 import { io } from 'socket.io-client'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from './useAuth'
 
 export function useSocket(onResourceAdded, onResourceDeleted) {
   const { user } = useAuth()
   const socketRef = useRef(null)
+
+  const callbacksRef = useRef({
+    onResourceAdded,
+    onResourceDeleted,
+  })
+
+  useEffect(() => {
+    callbacksRef.current = {
+      onResourceAdded,
+      onResourceDeleted,
+    }
+  }, [onResourceAdded, onResourceDeleted])
 
   useEffect(() => {
     if (!user) return
 
     console.log('Connecting socket...')
 
-    socketRef.current = io(
-      import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000',
+    const socket = io(
+      import.meta.env.VITE_API_URL?.replace('/api', '') ||
+        'http://localhost:5000',
       { withCredentials: true }
     )
 
-    const socket = socketRef.current
+    socketRef.current = socket
 
     socket.on('connect', () => {
       console.log('Socket connected:', socket.id)
@@ -29,15 +42,16 @@ export function useSocket(onResourceAdded, onResourceDeleted) {
 
     socket.on('resource:added', (resource) => {
       console.log('Resource received:', resource.title)
-      onResourceAdded?.(resource)
+      callbacksRef.current.onResourceAdded?.(resource)
     })
 
     socket.on('resource:deleted', ({ id }) => {
-      onResourceDeleted?.(id)
+      callbacksRef.current.onResourceDeleted?.(id)
     })
 
     return () => {
       socket.disconnect()
+      socketRef.current = null
     }
   }, [user])
 }

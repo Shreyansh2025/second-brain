@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useResources } from '../context/ResourceContext'
+import { useResources } from '../hooks/useResources'
 
 const SHORTCUTS = [
   { keys: ['N'], desc: 'Add new resource' },

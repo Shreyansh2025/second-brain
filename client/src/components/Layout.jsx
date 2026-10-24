@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Sidebar from './Sidebar'
 import AddResourceModal from './AddResourceModal'
-import { useResources } from '../context/ResourceContext'
-import { useAuth } from '../context/AuthContext'
+import { useResources } from '../hooks/useResources'
+import { useAuth } from '../hooks/useAuth'
 
 export default function Layout({ children }) {
   const { counts, tags, refresh } = useResources()

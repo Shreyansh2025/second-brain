@@ -1,10 +1,11 @@
-import { useAuth, AuthProvider } from './context/AuthContext'
+import { AuthProvider } from './context/AuthContext'
 import { ResourceProvider } from './context/ResourceContext'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import AuthModal from './components/AuthModal'
 import Digest from './pages/Digest'
+import { useAuth } from './hooks/useAuth'
 
 function AppContent() {
   const { user, loading } = useAuth()
@@ -26,7 +27,7 @@ function AppContent() {
     <>
       {/* Blurred background — pointer events disabled when not logged in */}
       <div className={!user ? 'pointer-events-none select-none' : ''}>
-        <ResourceProvider>
+        <ResourceProvider key={user?._id ?? 'guest'}>
           <Layout>
             {(props) =>
               props.activeNav === 'settings' ? <Settings /> :
