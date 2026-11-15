@@ -80,8 +80,14 @@ export function ResourceProvider({ children }) {
     }
   }, [])
 
+  const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
   const counts = {
     all: allResources.length,
+    digest: allResources.filter(
+      (resource) => new Date(resource.createdAt) >= sevenDaysAgo
+    ).length,
     links: allResources.filter((r) => r.type === 'link').length,
     youtube: allResources.filter(
       (r) => r.type === 'video' && r.platform === 'youtube'
