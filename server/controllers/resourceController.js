@@ -10,7 +10,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 const askGroq = async (prompt) => {
   const completion = await groq.chat.completions.create({
     messages: [{ role: 'user', content: prompt }],
-    model: 'llama-3.1-8b-instant',
+    model: process.env.GROQ_MODEL,
     temperature: 0.3,
   })
   return completion.choices[0].message.content.trim()

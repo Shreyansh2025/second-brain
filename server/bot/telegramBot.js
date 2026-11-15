@@ -17,7 +17,7 @@ const getAutoTags = async (title) => {
         role: 'user',
         content: `Suggest 3-5 relevant tags for: "${title}". Return ONLY a JSON array of lowercase strings. Example: ["coding","react"]`
       }],
-      model: 'llama-3.1-8b-instant',
+      model: process.env.GROQ_MODEL,
       temperature: 0.3,
     })
     const text = completion.choices[0].message.content.trim()
@@ -242,7 +242,7 @@ export const setupBot = () => {
 
       OCR: ${extractedText}` 
         }],
-        model: 'llama-3.1-8b-instant',
+        model: process.env.GROQ_MODEL,
         temperature: 0.3,
       })
       const titleLine = completion.choices[0].message.content.trim()
